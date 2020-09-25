@@ -26,6 +26,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 }]]]></db:input-parameters>
 		</db:insert>
 		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="68c367e4-31dc-4a9e-b840-7ae72ee692b6" message="Successfully inserted"/>
 		<ee:transform doc:name="Transform Message" doc:id="cd47bcdf-37d1-4bdd-88ae-f38aea85cfb1" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
