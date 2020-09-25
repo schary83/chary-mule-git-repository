@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="delete-empFlow" doc:id="0ba8cbdd-c6db-498d-bd97-90fa4184c567" >
+		<http:listener doc:name="DeleteEmpListener" doc:id="76abbc84-5323-49e6-ab21-555156d4a950" path="/deleteemp/{empid}" config-ref="HTTP"/>
+		<logger level="INFO" doc:name="Logger" doc:id="1a1de3a9-2185-4044-ac2e-445a0f9d0fc8" message="delete emp flow started :#[attributes.uriParams.empid]"/>
+		<db:delete doc:name="EMpDelete" doc:id="ad9b7fae-c6ec-4e1f-bb7a-8b4298d8e36c" config-ref="Database">
+			<db:sql >delete from emp where emp_id= :empid</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"empid":attributes.uriParams.empid
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="f08de2f1-f98e-4888-a424-7e003ffd9c0e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Status": "200",
+	"Message":"Emp Record Deleted Successfully"
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="StatusCode" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-variable>
+				<ee:set-variable variableName="Message" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"StatusCode":"400",
+    "Message":"record not found"
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</flow>
+</mule>

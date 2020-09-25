@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="insert_empbgFlow" doc:id="f5a5639f-401f-4684-a34c-43dfa4a230b3" >
+		<http:listener doc:name="empbg_insert_Listener" doc:id="74eb64e1-e402-4c32-afc0-09b735c26540" config-ref="HTTP" path="/empbg" allowedMethods="POST"/>
+		<foreach doc:name="For Each" doc:id="63605d4a-cd67-474f-98a4-020e15a2a610" >
+			<db:insert doc:name="empbg_Insert" doc:id="466e8e95-9d4e-48b5-b594-0f814f44ac2f" config-ref="Database">
+			<db:sql>insert into emp_bg(emp_id,doc_check,health_check) values (:emp_id,:doc_check,:health_check)</db:sql>
+			<db:input-parameters><![CDATA[#[{
+	"emp_id": payload.id,
+	"doc_check": payload.doc,
+	"health_check": payload.health
+}]]]></db:input-parameters>
+		</db:insert>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="6d8b22a1-9057-4089-9ef6-2d1205fd8dc1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	statuscode:200,
+	message: "records inserted in emp_gb"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

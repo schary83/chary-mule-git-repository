@@ -1,0 +1,19 @@
+#%RAML 1.0
+title: emp
+description: Maintain e Details
+/emp:
+  post:
+    description: "update customer details"
+    body:
+      application/json:
+        example:
+          {
+            "id":"Rangu",
+            "name":"Chary",
+            "status": "A"
+          }
+    responses:
+      200:
+        description: "success"
+      500:
+        description: "invalide Request"

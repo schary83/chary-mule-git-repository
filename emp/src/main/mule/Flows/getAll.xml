@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<db:config name="Database_emp" doc:name="Database Config" doc:id="a5c180b7-dec5-4253-a42d-918fed581471" >
+		<db:oracle-connection host="localhost" user="system" password="abcd@1234" instance="xe" />
+	</db:config>
+	<flow name="test1Flow" doc:id="bda55971-4750-4f40-b5d1-a7ff328a35dc" >
+		<http:listener doc:name="Listener" doc:id="e7c1ab3e-236e-45cf-8081-51d7f7f15a2f" path="/getAll" config-ref="HTTP"/>
+		<db:select doc:name="getAll" doc:id="e1d4caa1-4e59-4936-aeae-ee68e417b902" config-ref="Database">
+			<db:sql>select EMP_ID,EMP_NAME,EMP_STATUS from EMP </db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="ec115615-fc09-411f-9d39-f5ccfa4b48fc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+---
+	
+	{
+	emp: payload  map(emp, indexofEmp) ->{
+		id:emp.EMP_ID,
+		name:emp.EMP_NAME,
+		status:emp.EMP_STATUS
+	}
+	}
+	
+	
+	]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="e74e55fa-dd62-4656-8801-56d6f7941fdf" message="#[payload]"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1712e8c6-c6c8-46f6-a039-af6b41ed1347" type="DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, EXPRESSION">
+				<ee:transform doc:name="Transform Message" doc:id="75ff0682-b833-4f2d-a2a0-db98b4cc6c00">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"code":400,
+	"message":error.description
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="code" ><![CDATA[400]]></ee:set-variable>
+						<ee:set-variable variableName="message" ><![CDATA["Bad Request"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="scatter-gatherFlow" doc:id="a1bbafad-afaf-4712-9340-6c9459d3a779" >
+		<http:listener doc:name="Listener" doc:id="525a9b38-a651-48ce-9358-61c6638c9a69" config-ref="HTTP" path="/scatter-gather" allowedMethods="GET"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="9702d294-f922-45fa-b2de-b56a6e70eb03" >
+			<route >
+				<db:select doc:name="EmpSelect" doc:id="dbf6a018-d05b-48a1-8f6d-5602f13df373" config-ref="Database">
+					<db:sql >select emp_id,emp_name,emp_status from emp where emp_id= :emp_id </db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	"emp_id":attributes.queryParams.id
+}]]]></db:input-parameters>
+				</db:select>
+			</route>
+			<route >
+				<db:select doc:name="Empbg_Select" doc:id="a89cc7d5-27a7-4b55-8bbf-9387ba5e2730" config-ref="Database">
+					<db:sql >select emp_id,doc_check,health_check from emp_bg where emp_id= :emp_id </db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	"emp_id":attributes.queryParams.id
+}]]]></db:input-parameters>
+				</db:select>
+			</route>
+		</scatter-gather>
+		<logger level="INFO" doc:name="Logger" doc:id="54cf3127-1491-4d52-a066-0cc891172b1b" message="response:#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="e3898380-7809-493f-870a-255322979e68" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

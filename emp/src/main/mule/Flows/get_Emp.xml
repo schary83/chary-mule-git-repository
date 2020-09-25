@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<configuration doc:name="Configuration" doc:id="38ea93b9-9e36-487c-acd5-f0a57b09523e" defaultErrorHandler-ref="common_ErrorHandlingError_Handler" />
+	<configuration-properties doc:name="Configuration properties" doc:id="aecfbb60-df46-4ca4-8c16-84ad33f78dd7" file="dev.yaml" />
+	<flow name="get_EmpFlow" doc:id="50d624ed-22f3-4d47-ae8d-f73acdf2666e" >
+		<http:listener doc:name="getEMpListener" doc:id="245ef28d-5318-4469-ac39-2f61575d7635" path="/getEmp" allowedMethods="GET" config-ref="HTTP">
+			<http:error-response statusCode="#[vars.StatusCode]" reasonPhrase="#[vars.Message]">
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="f373ee3e-ebdb-48bb-81e6-1111d1fbb997" message="flow_Triggered:DB User : "/>
+		<validation:is-number numberType="INTEGER" doc:name="Is number" doc:id="f7be40fb-0522-4fd4-a06f-0e80e05d021d" value="#[attributes.queryParams.id]" message="id should be number"/>
+		<db:select doc:name="getEmpSelect" doc:id="16f2c984-885f-46af-9ade-6f34b9464c35" config-ref="Database">
+			<db:sql >select emp_id,emp_name,emp_status from emp where emp_id= :emp_id </db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"emp_id":attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<logger level="INFO" doc:name="Logger" doc:id="7823c3c0-02fe-4138-896f-c24f4e4946d3" message="DB Response:"/>
+		<choice doc:name="Choice" doc:id="c5d9be2c-e164-40a3-b494-9a82aa85ffc6" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="21b222ec-c3df-4614-acb3-e905a02951d8">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Raise error" doc:id="4d881ca4-0122-483c-8a5f-bba646168077" type="EMP:EMPLOYEE RECORD NOT FOUND" description="EMPLOYEE RECORD NOT FOUND"/>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

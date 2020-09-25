@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="d5e8b02a-10e2-4c16-9e31-7d98c454f3b5" file="dev.yaml" />
+	<http:listener-config name="HTTP" doc:name="HTTP Listener config" doc:id="2d633f8d-f5f0-4fa4-b687-16f82f8954cc" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database" doc:name="Database Config" doc:id="c254ca07-6945-41bc-9052-2c40dae3195b" >
+		<db:oracle-connection host="localhost" user="system" password="abcd@1234" instance="xe" />
+	</db:config>
+	<flow name="add_empFlow" doc:id="136f84e7-87aa-47e1-a7ca-e0434216dfde" >
+		<http:listener doc:name="AddEmp" doc:id="492cd790-8dc4-4cbf-8b6d-9497136a58b8" path="/Add" allowedMethods="PATCH" config-ref="HTTP"/>
+		<logger level="INFO" doc:name="Entry" doc:id="38ec29f7-d46c-4619-a881-a34ff3365240" message="Add emp message arrived to insert into DB #[payload]"/>
+		<foreach doc:name="For Each" doc:id="1f5a8458-ddf5-4a88-a07d-66310cc7c9e2">
+			<db:insert doc:name="Insert" doc:id="c0597206-0380-4154-bf82-2cda12ecdfad" config-ref="Database">
+			<db:sql>insert into emp(emp_id,emp_name,emp_status) values (:emp_id,:emp_name,:emp_status)</db:sql>
+			<db:input-parameters><![CDATA[#[{
+"emp_id": payload.id,
+"emp_name":payload.name,
+"emp_status":payload.status
+}]]]></db:input-parameters>
+		</db:insert>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="cd47bcdf-37d1-4bdd-88ae-f38aea85cfb1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Status": "200",
+	"message": "success"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

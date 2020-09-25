@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="scatter-gather-test-suite.xml" />
+	<munit:test name="scatter-gather-test-suite-scatter-gatherFlowTest" doc:id="e40a7450-97f5-4dee-b22f-103d6a51fb35" description="Test" expectedErrorType="DB:CONNECTIVITY">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="0cf4303b-6468-499e-a917-8eb37cb835ce" />
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to scatter-gatherFlow" doc:id="8dc2208a-61fb-4b3b-88be-3a75c33189e7" name="scatter-gatherFlow"/>
+		</munit:execution>
+	</munit:test>
+
+
+</mule>
